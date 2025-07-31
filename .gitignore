@@ -1,0 +1,25 @@
+# Binaries for programs
+*.exe
+*.bin
+
+# Compiled object files, libraries
+*.o
+*.a
+*.so
+
+# Dependency management
+vendor/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.swp
+*.bak
+*~
+
+# Test output
+testdata/out/
+
+# Environment variables and local configuration
+.env
+config.local.yaml

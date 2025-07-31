@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package nexus_clash.v1;
+
+import "api/proto/nexusclash/v1/common.proto";
+
+option go_package = "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1;nexusclashv1";
+
+// PlayerProfileService manages player data like stats and profile information.
+service PlayerProfileService {
+    // Creates a new profile for a registered user.
+  rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse);
+
+  // Retrieves a player's profile.
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+
+  // Updates a player's profile.
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+}
+
+// Represents the gameplay statistics for a player.
+message PlayerStats {
+  int32 kills = 1;
+  int32 deaths = 2;
+  int32 assists = 3;
+  int32 wins = 4;
+  int32 losses = 5;
+}
+
+// Represents a player's full profile.
+message Profile {
+  UUID user_id = 1;
+  string username = 2;
+  uint32 level = 3;
+  PlayerStats stats = 4;
+}
+
+// -- Messages for CreateProfile RPC --
+message CreateProfileRequest {
+  UUID user_id = 1;
+  string username = 2; // Can be pre-filled from registration
+}
+
+message CreateProfileResponse {
+  Profile profile = 1;
+}
+
+// -- Messages for GetProfile RPC --
+message GetProfileRequest {
+  UUID user_id = 1;
+}
+
+message GetProfileResponse {
+  Profile profile = 1;
+}

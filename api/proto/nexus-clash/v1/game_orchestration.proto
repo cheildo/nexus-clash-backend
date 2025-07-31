@@ -1,0 +1,38 @@
+syntax="proto3";
+
+package nexus_clash.v1;
+
+import "api/proto/nexusclash/v1/common.proto";
+
+option go_package = "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1;nexusclashv1";
+
+Service AuthService {
+    // Registers a new player account.
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+
+    // Logs a player in and returns a session token.
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+// -- Messages for Register RPC --
+message RegisterRequest {
+  string email = 1;
+  string username = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+    UUID player_id = 1;
+}
+
+// -- Messages for Login RPC --
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  // The session token (e.g., JWT) to be used for authenticated requests.
+  string session_token = 1;
+}
