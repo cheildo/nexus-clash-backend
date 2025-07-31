@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package nexusclash.v1;
+
+option go_package = "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1;nexusclashv1";
+
+// ...rest of your proto...

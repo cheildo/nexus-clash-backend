@@ -1,18 +1,18 @@
-syntax="proto3";
+syntax = "proto3";
 
-package nexus_clash.v1;
+package nexusclash.v1;
 
-import "api/proto/nexusclash/v1/common.proto";
+import "nexusclash/v1/common.proto";
 
 option go_package = "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1;nexusclashv1";
 
-Service AuthService {
-    // Registers a new player account.
-    rpc Register(RegisterRequest) returns (RegisterResponse);
+// AuthService handles player registration and authentication.
+service AuthService {
+  // Registers a new player account.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
 
-    // Logs a player in and returns a session token.
-    rpc Login(LoginRequest) returns (LoginResponse);
-    rpc Logout(LogoutRequest) returns (LogoutResponse);
+  // Logs a player in and returns a session token.
+  rpc Login(LoginRequest) returns (LoginResponse);
 }
 
 // -- Messages for Register RPC --
@@ -23,8 +23,9 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-    UUID player_id = 1;
+  UUID user_id = 1;
 }
+
 
 // -- Messages for Login RPC --
 message LoginRequest {

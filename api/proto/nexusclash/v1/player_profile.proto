@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package nexus_clash.v1;
+package nexusclash.v1;
 
-import "api/proto/nexusclash/v1/common.proto";
+import "nexusclash/v1/common.proto";
 
 option go_package = "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1;nexusclashv1";
 
@@ -52,4 +52,14 @@ message GetProfileRequest {
 
 message GetProfileResponse {
   Profile profile = 1;
+}
+
+message UpdateProfileRequest {
+  UUID user_id = 1;
+  string username = 2; // Optional, can be updated
+  PlayerStats stats = 3; // Optional, can be updated
+}
+
+message UpdateProfileResponse {
+  Profile profile = 1; // The updated profile
 }
