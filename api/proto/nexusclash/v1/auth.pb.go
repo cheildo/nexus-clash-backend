@@ -7,7 +7,6 @@
 package nexusclashv1
 
 import (
-	v1 "github.com/your-username/nexus-clash-backend/api/proto/nexusclash/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -90,7 +89,7 @@ type RegisterResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId *v1.UUID `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId *UUID `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 }
 
 func (x *RegisterResponse) Reset() {
@@ -125,7 +124,7 @@ func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_nexusclash_v1_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *RegisterResponse) GetUserId() *v1.UUID {
+func (x *RegisterResponse) GetUserId() *UUID {
 	if x != nil {
 		return x.UserId
 	}
@@ -297,7 +296,7 @@ var file_nexusclash_v1_auth_proto_goTypes = []interface{}{
 	(*RegisterResponse)(nil), // 1: nexusclash.v1.RegisterResponse
 	(*LoginRequest)(nil),     // 2: nexusclash.v1.LoginRequest
 	(*LoginResponse)(nil),    // 3: nexusclash.v1.LoginResponse
-	(*v1.UUID)(nil),          // 4: nexusclash.v1.UUID
+	(*UUID)(nil),             // 4: nexusclash.v1.UUID
 }
 var file_nexusclash_v1_auth_proto_depIdxs = []int32{
 	4, // 0: nexusclash.v1.RegisterResponse.user_id:type_name -> nexusclash.v1.UUID
@@ -317,6 +316,7 @@ func file_nexusclash_v1_auth_proto_init() {
 	if File_nexusclash_v1_auth_proto != nil {
 		return
 	}
+	file_nexusclash_v1_common_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_nexusclash_v1_auth_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RegisterRequest); i {

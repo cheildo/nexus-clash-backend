@@ -7,7 +7,6 @@
 package nexusclashv1
 
 import (
-	v1 "github.com/your-username/nexus-clash-backend/api/proto/nexusclash/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -107,7 +106,7 @@ type Profile struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId   *v1.UUID     `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId   *UUID        `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Username string       `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
 	Level    uint32       `protobuf:"varint,3,opt,name=level,proto3" json:"level,omitempty"`
 	Stats    *PlayerStats `protobuf:"bytes,4,opt,name=stats,proto3" json:"stats,omitempty"`
@@ -145,7 +144,7 @@ func (*Profile) Descriptor() ([]byte, []int) {
 	return file_nexusclash_v1_player_profile_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Profile) GetUserId() *v1.UUID {
+func (x *Profile) GetUserId() *UUID {
 	if x != nil {
 		return x.UserId
 	}
@@ -179,8 +178,8 @@ type CreateProfileRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId   *v1.UUID `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Username string   `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"` // Can be pre-filled from registration
+	UserId   *UUID  `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"` // Can be pre-filled from registration
 }
 
 func (x *CreateProfileRequest) Reset() {
@@ -215,7 +214,7 @@ func (*CreateProfileRequest) Descriptor() ([]byte, []int) {
 	return file_nexusclash_v1_player_profile_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CreateProfileRequest) GetUserId() *v1.UUID {
+func (x *CreateProfileRequest) GetUserId() *UUID {
 	if x != nil {
 		return x.UserId
 	}
@@ -282,7 +281,7 @@ type GetProfileRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId *v1.UUID `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId *UUID `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 }
 
 func (x *GetProfileRequest) Reset() {
@@ -317,7 +316,7 @@ func (*GetProfileRequest) Descriptor() ([]byte, []int) {
 	return file_nexusclash_v1_player_profile_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetProfileRequest) GetUserId() *v1.UUID {
+func (x *GetProfileRequest) GetUserId() *UUID {
 	if x != nil {
 		return x.UserId
 	}
@@ -376,7 +375,7 @@ type UpdateProfileRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId   *v1.UUID     `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId   *UUID        `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Username string       `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"` // Optional, can be updated
 	Stats    *PlayerStats `protobuf:"bytes,3,opt,name=stats,proto3" json:"stats,omitempty"`       // Optional, can be updated
 }
@@ -413,7 +412,7 @@ func (*UpdateProfileRequest) Descriptor() ([]byte, []int) {
 	return file_nexusclash_v1_player_profile_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *UpdateProfileRequest) GetUserId() *v1.UUID {
+func (x *UpdateProfileRequest) GetUserId() *UUID {
 	if x != nil {
 		return x.UserId
 	}
@@ -589,7 +588,7 @@ var file_nexusclash_v1_player_profile_proto_goTypes = []interface{}{
 	(*GetProfileResponse)(nil),    // 5: nexusclash.v1.GetProfileResponse
 	(*UpdateProfileRequest)(nil),  // 6: nexusclash.v1.UpdateProfileRequest
 	(*UpdateProfileResponse)(nil), // 7: nexusclash.v1.UpdateProfileResponse
-	(*v1.UUID)(nil),               // 8: nexusclash.v1.UUID
+	(*UUID)(nil),                  // 8: nexusclash.v1.UUID
 }
 var file_nexusclash_v1_player_profile_proto_depIdxs = []int32{
 	8,  // 0: nexusclash.v1.Profile.user_id:type_name -> nexusclash.v1.UUID
@@ -619,6 +618,7 @@ func file_nexusclash_v1_player_profile_proto_init() {
 	if File_nexusclash_v1_player_profile_proto != nil {
 		return
 	}
+	file_nexusclash_v1_common_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_nexusclash_v1_player_profile_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PlayerStats); i {
