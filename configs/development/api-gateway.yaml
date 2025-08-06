@@ -1,0 +1,7 @@
+# Configuration for the API Gateway in development environment
+http_server:
+  port: "8080"
+
+# Addresses for backend gRPC services
+services:
+  auth_service_addr: "localhost:50051"
