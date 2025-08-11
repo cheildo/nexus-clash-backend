@@ -16,6 +16,7 @@ import (
 
 	"github.com/cheildo/nexus-clash-backend/internal/apigateway"
 	"github.com/cheildo/nexus-clash-backend/internal/auth"
+	"github.com/cheildo/nexus-clash-backend/internal/playerprofile" // Import the new package
 )
 
 func main() {
@@ -31,7 +32,11 @@ func main() {
 	}
 
 	// --- gRPC Client Initialization ---
-	grpcClients, err := apigateway.NewGRPClients(viper.GetString("services.auth_service_addr"))
+	// Pass both service addresses to the client constructor
+	grpcClients, err := apigateway.NewGRPClients(
+		viper.GetString("services.auth_service_addr"),
+		viper.GetString("services.player_profile_service_addr"),
+	)
 	if err != nil {
 		slog.Error("Failed to initialize gRPC clients", "error", err)
 		os.Exit(1)
@@ -39,25 +44,26 @@ func main() {
 
 	// --- HTTP Router and Middleware Setup ---
 	r := chi.NewRouter()
-
-	// Middleware stack provides robust defaults:
-	// - Recovers from panics
-	// - Logs requests
-	// - Sets timeouts on requests to prevent hanging
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger) // Chi's structured logger
+	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	// --- Route Definitions ---
-	// We instantiate our handlers, injecting the gRPC clients they need.
+	// Instantiate all our handlers, injecting the gRPC clients they need.
 	authHandler := auth.NewHTTPHandler(grpcClients.Auth)
+	profileHandler := playerprofile.NewHTTPHandler(grpcClients.PlayerProfile) // Instantiate the new handler
 
-	// We group routes under a `/api/v1` prefix for versioning.
+	// Group routes under a `/api/v1` prefix.
 	r.Route("/api/v1", func(r chi.Router) {
+		// Auth routes
 		r.Post("/auth/register", authHandler.HandleRegister)
 		r.Post("/auth/login", authHandler.HandleLogin)
+
+		// Player Profile routes
+		// {userID} is a URL parameter that Chi will capture for us.
+		r.Get("/profiles/{userID}", profileHandler.HandleGetProfile)
 	})
 
 	slog.Info("All routes initialized.")
@@ -69,6 +75,7 @@ func main() {
 		Handler: r,
 	}
 
+	// ... (rest of the graceful shutdown logic remains the same) ...
 	go func() {
 		slog.Info("API Gateway starting...", "port", httpPort)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -77,14 +84,12 @@ func main() {
 		}
 	}()
 
-	// Wait for termination signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	slog.Info("Shutting down API Gateway server...")
 
-	// Create a context with a timeout to allow ongoing requests to finish.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

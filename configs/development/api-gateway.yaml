@@ -5,3 +5,5 @@ http_server:
 # Addresses for backend gRPC services
 services:
   auth_service_addr: "localhost:50051"
+  # Add the address for the new player profile service
+  player_profile_service_addr: "localhost:50052"
