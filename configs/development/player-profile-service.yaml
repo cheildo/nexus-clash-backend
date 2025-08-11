@@ -1,0 +1,11 @@
+# Configuration for the PlayerProfileService in development environment
+grpc_server:
+  port: "50052" # A different port from the auth-service
+
+database:
+  host: "localhost"
+  port: "5432"
+  user: "postgres"
+  password: "your_dev_password"
+  db_name: "auth_db"
+  ssl_mode: "disable"
