@@ -1,9 +1,14 @@
-# Configuration for the API Gateway in development environment
-http_server:
-  port: "8080"
+# Configuration for the MatchmakingService in the development environment
+grpc_server:
+  port: "50053"
 
-# Addresses for backend gRPC services
-services:
-  auth_service_addr: "localhost:50051"
-  # Add the address for the new player profile service
-  player_profile_service_addr: "localhost:50052"
+redis:
+  addr: "localhost:6379"
+  password: "" # No password for local dev Redis
+  db: 0 # Default Redis database
+
+# Matchmaking specific settings
+matchmaking:
+  pool_key: "matchmaking_pool" # The key for our Redis sorted set
+  check_interval_seconds: 5 # How often to check for a match
+  players_per_match: 10 # For a 5v5 game
