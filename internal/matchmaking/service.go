@@ -2,21 +2,33 @@ package matchmaking
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/segmentio/kafka-go"
 )
+
+// MatchFoundEvent is the payload we will send to Kafka.
+type MatchFoundEvent struct {
+	MatchID   string   `json:"matchID"`
+	PlayerIDs []string `json:"playerIDs"`
+}
 
 // Service orchestrates the matchmaking process.
 type Service struct {
 	pool            Pool
 	checkInterval   time.Duration
 	playersPerMatch int
+	producer        *kafka.Writer // Added Kafka producer
 }
 
 // NewService creates a new matchmaking service.
-func NewService(pool Pool, checkInterval time.Duration, playersPerMatch int) *Service {
+func NewService(pool Pool, producer *kafka.Writer, checkInterval time.Duration, playersPerMatch int) *Service {
 	return &Service{
 		pool:            pool,
+		producer:        producer,
 		checkInterval:   checkInterval,
 		playersPerMatch: playersPerMatch,
 	}
@@ -50,15 +62,39 @@ func (s *Service) findAndProcessMatches(ctx context.Context) {
 	}
 
 	if players == nil {
-		// No match found, which is a normal occurrence.
 		return
 	}
 
 	slog.Info("Processing found match", "players", players)
 
-	// TODO:
 	// 1. Generate a unique Match ID.
-	// 2. Call the Game Orchestration Service via gRPC to request a new game server instance.
-	// 3. For each player in the `players` slice, find their active WebSocket connection
-	//    and send them the "MATCH_FOUND" message with the connection details.
+	matchID := uuid.New().String()
+
+	// 2. Create the event payload.
+	event := MatchFoundEvent{
+		MatchID:   matchID,
+		PlayerIDs: players,
+	}
+
+	// 3. Marshal the event to JSON.
+	eventBytes, err := json.Marshal(event)
+	if err != nil {
+		slog.Error("Failed to marshal MatchFoundEvent", "error", err)
+		// Ideally, we'd add the players back to the pool here.
+		return
+	}
+
+	// 4. Publish the event to Kafka.
+	err = s.producer.WriteMessages(ctx, kafka.Message{
+		Key:   []byte(matchID), // Use matchID as the key for partitioning.
+		Value: eventBytes,
+	})
+	if err != nil {
+		slog.Error("Failed to write message to Kafka", "error", err)
+		// Critical error: handle this with retries or an alert system.
+	} else {
+		slog.Info("MatchFoundEvent published to Kafka", "matchID", matchID)
+	}
+
+	// The TODO is now complete! This service's job is done for this match.
 }

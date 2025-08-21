@@ -16,3 +16,8 @@ redis:
 # Matchmaking specific settings (needs to match the matchmaking-service config)
 matchmaking:
   pool_key: "matchmaking_pool"
+
+kafka:
+  brokers: ["localhost:9092"]
+  match_found_topic: "match_found_events"
+  consumer_group_id: "api_gateway_group"

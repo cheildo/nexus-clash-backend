@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/cheildo/nexus-clash-backend/internal/matchmaking"
+	"github.com/cheildo/nexus-clash-backend/internal/pkg/kafka"
 	"github.com/cheildo/nexus-clash-backend/internal/pkg/redis"
 )
 
@@ -42,10 +43,18 @@ func main() {
 	}
 	slog.Info("Redis connection successful.")
 
+	// --- Kafka Producer Initialization ---
+	producer := kafka.NewProducer(
+		viper.GetStringSlice("kafka.brokers"),
+		viper.GetString("kafka.match_found_topic"),
+	)
+	defer producer.Close()
+
 	// --- Dependency Injection ---
 	pool := matchmaking.NewPool(rdb, viper.GetString("matchmaking.pool_key"))
 	svc := matchmaking.NewService(
 		pool,
+		producer, // Inject the producer
 		viper.GetDuration("matchmaking.check_interval_seconds")*time.Second,
 		viper.GetInt("matchmaking.players_per_match"),
 	)
