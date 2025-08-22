@@ -19,43 +19,49 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// WebsocketHandler handles the WebSocket connection for matchmaking.
+// Add a connection manager to the handler struct.
 type WebsocketHandler struct {
 	pool Pool
+	cm   ConnectionManager // Use an interface for better testing
 }
 
-func NewWebsocketHandler(pool Pool) *WebsocketHandler {
-	return &WebsocketHandler{pool: pool}
+// ConnectionManager defines the interface we need to manage connections.
+type ConnectionManager interface {
+	Add(playerID string, conn *websocket.Conn)
+	Remove(playerID string)
 }
 
-// ServeHTTP is the entry point for an HTTP request. It upgrades the connection and handles it.
+func NewWebsocketHandler(pool Pool, cm ConnectionManager) *WebsocketHandler {
+	return &WebsocketHandler{
+		pool: pool,
+		cm:   cm,
+	}
+}
+
+// ... (ServeHTTP method) ...
 func (h *WebsocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// For this to be a real-world project, we must authenticate the user here.
-	// A production implementation would use a middleware to validate the JWT passed
-	// in a header (e.g., `Authorization: Bearer <token>`) or query parameter.
-	// For now, we will simulate this by getting the player ID from a query parameter.
+	// ... (playerID extraction and connection upgrade are the same) ...
 	playerID := r.URL.Query().Get("playerID")
 	if playerID == "" {
 		http.Error(w, "Player ID is required", http.StatusBadRequest)
 		return
 	}
-
-	// Upgrade the HTTP connection to a WebSocket connection.
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		slog.Error("Failed to upgrade connection to WebSocket", "error", err)
 		return
 	}
-	slog.Info("WebSocket connection established", "playerID", playerID)
 
-	// Once the connection is established, add the player to the matchmaking pool.
+	// Add the connection to our manager.
+	h.cm.Add(playerID, conn)
+
 	if err := h.pool.AddPlayer(r.Context(), playerID); err != nil {
 		slog.Error("Failed to add player to pool", "playerID", playerID, "error", err)
+		h.cm.Remove(playerID) // Clean up if adding to pool fails
 		conn.Close()
 		return
 	}
 
-	// The `handleConnection` method runs for the lifetime of the connection.
 	h.handleConnection(conn, playerID)
 }
 
@@ -64,7 +70,8 @@ func (h *WebsocketHandler) handleConnection(conn *websocket.Conn, playerID strin
 	// The defer statement is crucial. It ensures that when the connection is closed for any reason
 	// (client disconnects, error, etc.), we clean up by removing the player from the pool.
 	defer func() {
-		slog.Info("Closing WebSocket connection and removing player from pool", "playerID", playerID)
+		slog.Info("Closing WebSocket connection and cleaning up", "playerID", playerID)
+		h.cm.Remove(playerID) // Remove from connection manager
 		h.pool.RemovePlayer(context.Background(), playerID)
 		conn.Close()
 	}()

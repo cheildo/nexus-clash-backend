@@ -17,7 +17,8 @@ import (
 	"github.com/cheildo/nexus-clash-backend/internal/apigateway"
 	"github.com/cheildo/nexus-clash-backend/internal/auth"
 	"github.com/cheildo/nexus-clash-backend/internal/matchmaking" // Import matchmaking
-	"github.com/cheildo/nexus-clash-backend/internal/pkg/redis"   // Import redis
+	"github.com/cheildo/nexus-clash-backend/internal/pkg/kafka"
+	"github.com/cheildo/nexus-clash-backend/internal/pkg/redis" // Import redis
 	"github.com/cheildo/nexus-clash-backend/internal/playerprofile"
 )
 
@@ -58,6 +59,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	// --- Connection Manager and Kafka Consumer Initialization ---
+	connManager := apigateway.NewConnectionManager()
+	kafkaReader := kafka.NewConsumer(
+		viper.GetStringSlice("kafka.brokers"),
+		viper.GetString("kafka.match_found_topic"),
+		viper.GetString("kafka.consumer_group_id"),
+	)
+	matchmakingConsumer := apigateway.NewMatchmakingConsumer(kafkaReader, connManager)
+
+	// Start the consumer in a background goroutine.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go matchmakingConsumer.Run(ctx)
+
 	// --- HTTP Router and Middleware Setup ---
 	r := chi.NewRouter()
 	// ... (middleware setup remains the same) ...
@@ -74,7 +89,7 @@ func main() {
 	// Instantiate all our HTTP handlers.
 	authHandler := auth.NewHTTPHandler(grpcClients.Auth)
 	profileHandler := playerprofile.NewHTTPHandler(grpcClients.PlayerProfile)
-	matchmakingHandler := matchmaking.NewWebsocketHandler(matchmakingPool) // Create the new WebSocket handler
+	matchmakingHandler := matchmaking.NewWebsocketHandler(matchmakingPool, connManager) // Create the new WebSocket handler
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Auth routes
@@ -112,9 +127,6 @@ func main() {
 	<-quit
 
 	slog.Info("Shutting down API Gateway server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
 		slog.Error("Server forced to shutdown:", "error", err)
