@@ -12,6 +12,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"net/http"
+	_ "net/http/pprof"
+
 	// Internal packages
 	"github.com/cheildo/nexus-clash-backend/internal/pkg/database"
 	"github.com/cheildo/nexus-clash-backend/internal/playerprofile"
@@ -19,6 +22,16 @@ import (
 	// Proto-generated code
 	nexusclashv1 "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1"
 )
+
+func startDiagnosticsServer(port string) {
+	go func() {
+		slog.Info("Starting diagnostics server", "port", port)
+		// http.DefaultServeMux already has the pprof handlers registered by the import.
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
+			slog.Error("Diagnostics server failed to start", "error", err)
+		}
+	}()
+}
 
 func main() {
 	// --- Configuration Loading ---
@@ -66,6 +79,12 @@ func main() {
 	grpcServer := grpc.NewServer()
 	nexusclashv1.RegisterPlayerProfileServiceServer(grpcServer, grpcHandler)
 	reflection.Register(grpcServer)
+
+	// --- Start Diagnostics Server ---
+	diagnosticsPort := viper.GetString("diagnostics.port")
+	if diagnosticsPort != "" {
+		startDiagnosticsServer(diagnosticsPort)
+	}
 
 	// --- Graceful Shutdown ---
 	go func() {

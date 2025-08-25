@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"net/http"
+	_ "net/http/pprof"
+
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
@@ -17,6 +20,17 @@ import (
 	"github.com/cheildo/nexus-clash-backend/internal/pkg/kafka"
 	"github.com/cheildo/nexus-clash-backend/internal/pkg/redis"
 )
+
+// Helper function to start the diagnostics server
+func startDiagnosticsServer(port string) {
+	go func() {
+		slog.Info("Starting diagnostics server", "port", port)
+		// http.DefaultServeMux already has the pprof handlers registered by the import.
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
+			slog.Error("Diagnostics server failed to start", "error", err)
+		}
+	}()
+}
 
 func main() {
 	// --- Configuration Loading ---
@@ -81,6 +95,12 @@ func main() {
 			slog.Error("gRPC server failed to serve", "error", err)
 		}
 	}()
+
+	// --- Start Diagnostics Server ---
+	diagnosticsPort := viper.GetString("diagnostics.port")
+	if diagnosticsPort != "" {
+		startDiagnosticsServer(diagnosticsPort)
+	}
 
 	// --- Graceful Shutdown ---
 	quit := make(chan os.Signal, 1)

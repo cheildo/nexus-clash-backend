@@ -13,6 +13,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"net/http"
+	_ "net/http/pprof"
+
 	// Internal packages
 	"github.com/cheildo/nexus-clash-backend/internal/auth"
 	"github.com/cheildo/nexus-clash-backend/internal/pkg/database"
@@ -20,6 +23,17 @@ import (
 	// Proto-generated code
 	nexusclashv1 "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1"
 )
+
+// Helper function to start the diagnostics server
+func startDiagnosticsServer(port string) {
+	go func() {
+		slog.Info("Starting diagnostics server", "port", port)
+		// http.DefaultServeMux already has the pprof handlers registered by the import.
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
+			slog.Error("Diagnostics server failed to start", "error", err)
+		}
+	}()
+}
 
 func main() {
 	// --- Configuration Loading using Viper ---
@@ -76,6 +90,12 @@ func main() {
 	nexusclashv1.RegisterAuthServiceServer(grpcServer, grpcHandler)
 	// Enable gRPC reflection. This is useful for tools like grpcurl to query the server.
 	reflection.Register(grpcServer)
+
+	// --- Start Diagnostics Server ---
+	diagnosticsPort := viper.GetString("diagnostics.port")
+	if diagnosticsPort != "" {
+		startDiagnosticsServer(diagnosticsPort)
+	}
 
 	// --- Graceful Shutdown ---
 	// This is a critical part of a production service. It allows the server to finish

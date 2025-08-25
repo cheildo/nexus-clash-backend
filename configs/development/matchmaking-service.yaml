@@ -16,3 +16,6 @@ matchmaking:
 kafka:
   brokers: ["localhost:9092"]
   match_found_topic: "match_found_events"
+
+diagnostics:
+  port: "6063"

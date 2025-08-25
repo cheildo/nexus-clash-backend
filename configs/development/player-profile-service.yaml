@@ -6,6 +6,9 @@ database:
   host: "localhost"
   port: "5432"
   user: "postgres"
-  password: "your_dev_password"
+  password: ""
   db_name: "auth_db"
   ssl_mode: "disable"
+
+diagnostics:
+  port: "6062"
