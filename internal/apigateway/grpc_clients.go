@@ -2,7 +2,6 @@ package apigateway
 
 import (
 	"log/slog"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -19,11 +18,11 @@ type Clients struct {
 // NewGRPClients creates and returns gRPC clients for all backend services.
 func NewGRPClients(authServiceAddr, profileServiceAddr string) (*Clients, error) {
 	// --- Connect to Auth Service ---
-	authConn, err := grpc.Dial(
+	authConn, err := grpc.NewClient(
 		authServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-		grpc.WithTimeout(5*time.Second),
+		//grpc.WithBlock(),
+		//grpc.WithTimeout(5*time.Second),
 	)
 	if err != nil {
 		slog.Error("Failed to connect to auth service", "address", authServiceAddr, "error", err)
@@ -33,11 +32,11 @@ func NewGRPClients(authServiceAddr, profileServiceAddr string) (*Clients, error)
 	authClient := nexusclashv1.NewAuthServiceClient(authConn)
 
 	// --- Connect to Player Profile Service ---
-	profileConn, err := grpc.Dial(
+	profileConn, err := grpc.NewClient(
 		profileServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-		grpc.WithTimeout(5*time.Second),
+		//grpc.WithBlock(),
+		//grpc.WithTimeout(5*time.Second),
 	)
 	if err != nil {
 		slog.Error("Failed to connect to player profile service", "address", profileServiceAddr, "error", err)
