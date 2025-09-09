@@ -2,6 +2,16 @@ syntax = "proto3";
 
 package nexusclash.v1;
 
+import "google/protobuf/empty.proto";
+
 option go_package = "github.com/cheildo/nexus-clash-backend/api/proto/nexusclash/v1;nexusclashv1";
 
-// ...rest of your proto...
+// GameOrchestrationService manages the lifecycle of dedicated game servers.
+service GameOrchestrationService {
+// GetStatus returns the current status of the orchestration service.
+rpc GetStatus(google.protobuf.Empty) returns (StatusResponse);
+}
+message StatusResponse {
+string status = 1;
+int64 running_servers = 2;
+}

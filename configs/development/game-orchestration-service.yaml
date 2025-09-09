@@ -1,0 +1,14 @@
+# Configuration for the GameOrchestrationService
+grpc_server:
+  port: "50054"
+
+diagnostics:
+  port: "6064"
+
+kafka:
+  brokers: ["localhost:9092"]
+  # Topic to listen on for new matches
+  match_found_topic: "match_found_events"
+  # Topic to publish to when a server is ready
+  server_ready_topic: "game_server_ready_events"
+  consumer_group_id: "orchestrator_group"
